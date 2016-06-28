@@ -9,7 +9,7 @@
 #import "BMKMapViewController.h"
 #define SuperWith self.view.frame.size.width
 #define SuperHeight self.view.frame.size.height
-@interface BMKMapViewController ()<BMKLocationServiceDelegate,BMKMapViewDelegate,BMKGeneralDelegate,CLLocationManagerDelegate,BMKGeoCodeSearchDelegate>
+@interface BMKMapViewController ()<BMKLocationServiceDelegate,BMKMapViewDelegate,BMKGeneralDelegate,CLLocationManagerDelegate,BMKGeoCodeSearchDelegate,UITableViewDataSource,UITableViewDelegate>
 {
     BMKLocationService *locSeverice;
     BMKMapManager *_mapManager;
@@ -17,11 +17,22 @@
     BMKMapView *mapview;
     CLLocationManager *locationManager;
     BMKGeoCodeSearch  *GeoCoderSearch;
+    UITableView *_table;
 }
 @property (nonatomic ,assign)CGFloat latation;
 @property (nonatomic ,assign)CGFloat LongStation;
 @property (nonatomic)CLLocationCoordinate2D coordinate;
 @property (nonatomic ,strong)NSMutableArray *poiListArray;
+@property (nonatomic ,strong)NSMutableArray *tableDataArray;
+@property (nonatomic ,strong)NSMutableDictionary *mutDict;
+@property (nonatomic ,strong)NSString *address;
+@property (nonatomic ,strong)NSString *name;
+@property (nonatomic ,strong)NSString *city;
+@property (nonatomic ,assign)BOOL annotaionShow;
+
+
+@property (nonatomic ,strong)NSString *latitude;
+@property (nonatomic ,strong)NSString *Longitude;
 
 @end
 
@@ -60,8 +71,31 @@
     
     GeoCoderSearch = [[BMKGeoCodeSearch alloc]init];
     GeoCoderSearch.delegate = self;
+    
+    _tableDataArray = [NSMutableArray array];
+    _table = [[UITableView alloc]initWithFrame:CGRectMake(SuperWith/2, 64, SuperWith/3, SuperHeight) style:UITableViewStyleGrouped];
+    _table.dataSource = self;
+    _table.delegate = self;
+    [_table registerClass:[UITableViewCell class] forCellReuseIdentifier:@"dataCell"];
+    [self.view addSubview:_table];
 
 }
+
+- (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
+{
+    NSLog(@"%@",_tableDataArray);
+    return _tableDataArray.count;
+}
+
+- (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:@"dataCell"];
+    cell.textLabel.text = [_mutDict valueForKey:@"name"];
+    return cell;
+}
+
+
+
 
 
 - (void)didUpdateUserHeading:(BMKUserLocation *)userLocation
@@ -165,43 +199,61 @@
     }];
     
     [locationManager stopUpdatingLocation];
-    
-    
-    
-    
+
 }
 
-//反地理编码
+//逆地理编码
 -(void) onGetReverseGeoCodeResult:(BMKGeoCodeSearch *)searcher result:(BMKReverseGeoCodeResult *)result errorCode:(BMKSearchErrorCode)error
 {
-    NSArray* array = [NSArray arrayWithArray:mapview.annotations];
-    [mapview removeAnnotations:array];
-    array = [NSArray arrayWithArray:mapview.overlays];
-    [mapview removeOverlays:array];
-    
-    [_poiListArray removeAllObjects];
-    for(BMKPoiInfo *poiInfo in result.poiList)
+    if (result) {
+        [_tableDataArray removeAllObjects];
+        _address = result.address;
+        _name = result.addressDetail.streetName;
+        _city = result.addressDetail.city;
+        _latitude = [NSString stringWithFormat:@"%f",result.location.latitude];
+        _Longitude = [NSString stringWithFormat:@"%f",result.location.longitude];
+        
+        NSDictionary *dict = @{@"address":_address,@"name":_name,@"city":_city,@"location":_latitude,@"Long":_Longitude};
+        [_tableDataArray addObject:dict];
+    }else
     {
-        NSLog(@"%@",poiInfo.address);
-        [_poiListArray addObject:poiInfo.address];
+        NSLog(@"找不到相应的位置信息");
     }
+    
+    int i = 0;
+    for (BMKPoiInfo *point in result.poiList) {
+        NSDictionary *dict = @{@"address":point.address,@"name":point.name,@"city":point.city};
+        [_tableDataArray addObject:dict];
+        i++;
+        if (i == result.poiList.count) {
+            if (!_annotaionShow) {
+                _annotaionShow = YES;
+                
+                BMKCoordinateRegion region;
+                region.center.latitude =  [_latitude doubleValue];
+                region.center.longitude = [_Longitude doubleValue];
+                region.span.latitudeDelta = 0;
+                region.span.longitudeDelta = 0;
+                [UIView animateWithDuration:1 animations:^{
+                    mapview.region = region;
+
+                }];
+                
+                //一开始显示的（大头针）
+                _annotation = [[BMKPointAnnotation alloc]init];
+                CLLocationCoordinate2D coor;
+                coor.latitude = [_latitude doubleValue];
+                coor.longitude = [_Longitude doubleValue];
+                _annotation.coordinate = coor;
+                _annotation.title = _name;
+                [mapview addAnnotation:_annotation];
+            }
+            [_table reloadData];
+            
+        }
+    }
+   
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 - (void)dealloc
 {

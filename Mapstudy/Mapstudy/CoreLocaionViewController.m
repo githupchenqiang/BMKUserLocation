@@ -15,8 +15,8 @@
 }
 @property (weak, nonatomic) IBOutlet UITextField *latitude;
 @property (weak, nonatomic) IBOutlet UITextField *Logitude;
-@property (weak, nonatomic) IBOutlet UITextField *altitude;
-@property (weak, nonatomic) IBOutlet UITextField *speed;
+@property (weak, nonatomic) IBOutlet UITextField *Address;
+@property (weak, nonatomic) IBOutlet UITextField *city;
 - (IBAction)location:(id)sender;
 @property (weak, nonatomic) IBOutlet UITextField *course;
 @end
@@ -66,11 +66,14 @@
     //依次获取cllocation中的经度纬度，高度 速度 方向信息
     NSLog(@"%f==%f==%f==%f==%f",location.coordinate.latitude,location.coordinate.longitude,location.altitude,location.speed,location.course);
     
+    self.latitude.text = [NSString stringWithFormat:@"%f",location.coordinate.latitude];
+    self.Logitude.text = [NSString stringWithFormat:@"%f",location.coordinate.longitude];
+    
     CLGeocoder *geocoder = [[CLGeocoder alloc]init];
     [geocoder reverseGeocodeLocation:location completionHandler:^(NSArray<CLPlacemark *> * _Nullable placemarks, NSError * _Nullable error) {
         if (placemarks.count > 0) {
             CLPlacemark *placeMark = [placemarks objectAtIndex:0];
-            self.latitude.text = placeMark.name;
+            self.Address.text = placeMark.name;
             NSLog(@"%@",placemarks);
             
             //获取城市
@@ -80,7 +83,7 @@
             }
             
             NSLog(@"city==%@",city);
-            _Logitude.text = city;
+            _city.text = city;
         }else if (error == nil && [placemarks count] == 0)
         {
             NSLog(@"No results were ");

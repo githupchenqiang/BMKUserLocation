@@ -358,7 +358,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)",
 				);
-				GCC_PREFIX_HEADER = /Users/chenqiang/Desktop/Study/Mapstudy/Mapstudy/PrefixHeader.pch;
+				GCC_PREFIX_HEADER = /Users/chenqiang/Desktop/Study/BMKMap/Mapstudy/Mapstudy/PrefixHeader.pch;
 				HEADER_SEARCH_PATHS = "";
 				INFOPLIST_FILE = Mapstudy/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
@@ -379,7 +379,7 @@
 					"$(inherited)",
 					"$(PROJECT_DIR)",
 				);
-				GCC_PREFIX_HEADER = /Users/chenqiang/Desktop/Study/Mapstudy/Mapstudy/PrefixHeader.pch;
+				GCC_PREFIX_HEADER = /Users/chenqiang/Desktop/Study/BMKMap/Mapstudy/Mapstudy/PrefixHeader.pch;
 				HEADER_SEARCH_PATHS = "";
 				INFOPLIST_FILE = Mapstudy/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
